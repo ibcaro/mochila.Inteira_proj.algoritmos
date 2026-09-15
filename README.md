@@ -1,6 +1,6 @@
 # mochila.Inteira_proj.algoritmos
 
-Escreva um programa em Linguagem C para o algoritmo da mochila inteira visto
+  Escreva um programa em Linguagem C para o algoritmo da mochila inteira visto
 em aula. Seu algoritmo deve simular exatamente o algoritmo visto em aula, ou seja,
 não há repetição dos objetos e todos os objetos cabem na mochila. Você deve fornecer
 também o algoritmo ingênuo para resolver o mesmo problema (o algoritmo ingênuo não
