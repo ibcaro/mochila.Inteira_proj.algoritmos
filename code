@@ -1,0 +1,121 @@
+/*
+ * TRABALHO: Algoritmo da Mochila Inteira
+ *   NOME:Rebeca Rocha
+ *   RA: 10723463
+ */
+
+#include <stdio.h>
+#include <string.h>
+
+#define MAX 100
+
+struct Objeto {
+    char nome[50];
+    int peso;
+    int valor;
+};
+
+void criarArquivoEntrada() {
+    FILE *f = fopen("in.txt", "w");
+    if (f != NULL) {
+        fprintf(f, "3 16\n");
+        fprintf(f, "a 13 30\n");
+        fprintf(f, "b 9 20\n");
+        fprintf(f, "c 6 15\n");
+        fclose(f);
+    }
+}
+
+int main() {
+    criarArquivoEntrada();
+
+    FILE *arquivo = fopen("in.txt", "r");
+    if (arquivo == NULL) {
+        printf("Erro ao abrir in.txt\n");
+        return 1;
+    }
+
+    int n, c;
+    fscanf(arquivo, "%d %d", &n, &c);
+
+    struct Objeto objetos[MAX];
+    for (int i = 0; i < n; i++) {
+        fscanf(arquivo, "%s %d %d", objetos[i].nome, &objetos[i].peso, &objetos[i].valor);
+    }
+    fclose(arquivo);
+
+    long long passos_ingenuo = 0;
+    int melhor_valor_ingenuo = 0;
+    int melhor_comb = 0;
+    long long total_combs = 1LL << n;
+
+    for (long long i = 0; i < total_combs; i++) {
+        int peso_atual = 0;
+        int valor_atual = 0;
+
+        for (int j = 0; j < n; j++) {
+            passos_ingenuo++;
+            if ((i >> j) & 1) {
+                peso_atual += objetos[j].peso;
+                valor_atual += objetos[j].valor;
+            }
+        }
+
+        passos_ingenuo++;
+        if (peso_atual <= c && valor_atual > melhor_valor_ingenuo) {
+            melhor_valor_ingenuo = valor_atual;
+            melhor_comb = i;
+        }
+    }
+
+    long long passos_pd = 0;
+    int M[MAX + 1][MAX + 1];
+
+    for (int i = 0; i <= n; i++) {
+        for (int w = 0; w <= c; w++) {
+            passos_pd++;
+            if (i == 0 || w == 0) {
+                M[i][w] = 0;
+            } else if (objetos[i - 1].peso <= w) {
+                int com_item = objetos[i - 1].valor + M[i - 1][w - objetos[i - 1].peso];
+                int sem_item = M[i - 1][w];
+                
+                if (com_item > sem_item) {
+                    M[i][w] = com_item;
+                } else {
+                    M[i][w] = sem_item;
+                }
+            } else {
+                M[i][w] = M[i - 1][w];
+            }
+        }
+    }
+
+    int escolhidos[MAX] = {0};
+    int w = c;
+    for (int i = n; i > 0; i--) {
+        passos_pd++;
+        if (M[i][w] != M[i - 1][w]) {
+            escolhidos[i - 1] = 1;
+            w -= objetos[i - 1].peso;
+        }
+    }
+
+    printf("--- OBJETOS ESCOLHIDOS ---\n");
+    int peso_total = 0;
+    for (int i = 0; i < n; i++) {
+        if (escolhidos[i] == 1) {
+            printf("- %s (Peso: %d, Valor: %d)\n", objetos[i].nome, objetos[i].peso, objetos[i].valor);
+            peso_total += objetos[i].peso;
+        }
+    }
+
+    printf("\nValor Total: %d\n", M[n][c]);
+    printf("Peso Total: %d / %d\n\n", peso_total, c);
+
+    printf("--- COMPARACAO DE PASSOS ---\n");
+    printf("Algoritmo Ingenuo: %lld passos\n", passos_ingenuo);
+    printf("Programacao Dinamica: %lld passos\n", passos_pd);
+
+    return 0;
+}
